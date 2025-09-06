@@ -1,0 +1,21 @@
+# Run  pip install -r requirements.txt  to install the required packages
+
+# Core data manipulation and analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Financial data extraction
+yfinance>=0.2.18
+
+# Statistical analysis and modeling
+statsmodels>=0.14.0
+
+# Data visualization
+matplotlib>=3.7.0
+
+# Web scraping for index constituents
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# Additional utilities
+lxml>=4.9.0  # XML/HTML parser for pandas.read_html()
