@@ -2,6 +2,9 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime
 import time
+import numpy as np 
+import requests
+from io import StringIO
 
 def get_stock_metrics(tickers):
     """
@@ -79,7 +82,8 @@ def get_stock_metrics(tickers):
                 'P/E Ratio TTM': info.get('trailingPE', 'N/A'), # Current Stock Price / Earnings Per Share (last 12 months): how many years it would take to get your money back based on last year's profit
                 'P/E Ratio LFQ (Calculated)': current_price / (ttm_net_income / info.get('sharesOutstanding', 1)) if ttm_net_income > 0 else 'N/A', # Current Stock Price / Earnings Per Share (last 4 quarters): how many years it would take to get your money back based on last year's profit
                 'Forward P/E': info.get('forwardPE', 'N/A'),  # Current Stock Price / Projected Earnings Per Share (next 12 months): how many years it would take based on what you THINK it will make next year
-                'Current P/B Ratio': info.get('priceToBook', 'N/A'), # how much investors are paying relative to a company's book value (net worth on the balance sheet)
+                'P/B Ratio': info.get('priceToBook', 'N/A'), # how much investors are paying relative to a company's book value (net worth on the balance sheet)
+                'P/S Ratio TTM': info.get('priceToSalesTrailing12Months', 'N/A'), # Price / Sales: how much investors are paying for each dollar of sales
                 'Current Ratio MRQ': info.get('currentRatio', 'N/A'), # Current Assets / Current Liabilities: how easily a company can pay its short-term obligations
                 'Debt to Equity MRQ': info.get('debtToEquity', 'N/A'), # Total Debt / Shareholder's Equity: how much debt a company has compared to its equity
                 'ROE TTM': info.get('returnOnEquity', 'N/A'),  # Return on Equity: how efficiently a company uses shareholder equity to generate profit
@@ -103,7 +107,6 @@ def get_stock_metrics(tickers):
                 'Total Debt MRQ': format_scale(info.get('totalDebt', 'N/A')), # Total Debt: total interest-bearing debt on the balance sheet
                 
                 # ADDITIONAL METRICS  
-                'P/S Ratio TTM': info.get('priceToSalesTrailing12Months', 'N/A'), # Price / Sales: how much investors are paying for each dollar of sales
                 'ROA': info.get('returnOnAssets', 'N/A'), # Return on Assets: how efficiently a company uses its assets to generate profit
                 'EPS TTM': info.get('trailingEps', 'N/A'), # Earnings Per Share: how much profit a company makes per share of stock
                 'Dividend Yield': info.get('dividendYield', 'N/A'), # Dividend Yield: annual dividend payment divided by stock price, expressed as a percentage
@@ -193,9 +196,38 @@ def check_data_quality(df):
     
     return warnings
 
+def sp500_tickers():
+
+    # Get S&P500 tickers
+    url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
+    response = requests.get(url, headers=headers)
+    tickers = pd.read_html(StringIO(response.text))[0].Symbol.to_list()
+    tickers = [x.replace('.','-') for x in tickers]
+
+    return tickers
+
+def nasdaq_tickers():
+
+    # Get S&P500 tickers
+    url = 'https://en.wikipedia.org/wiki/NASDAQ-100'
+    response = requests.get(url, headers=headers)
+    tickers = pd.read_html(StringIO(response.text))[4]['Ticker'].to_list()
+    tickers = [x.replace('.','-') for x in tickers]
+
+    return tickers
+
 # SIMPLE USAGE
 if __name__ == "__main__":
-    # Your ticker list
+    
+    #=============================================================================================================
+    # TICKER SELECTION OPTIONS
+    #=============================================================================================================
+    
+    # Option 1: Manual ticker selection for specific stocks of interest
+    # Uncomment and modify this list to analyze specific tickers
+    # my_tickers = ['EVER']  # Single ticker example
+    
+    # Current manual selection - mix of growth, value, and speculative stocks
     my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
                   'PLTR', 'META', 'CTRE', 'BLDP', 'AAPL', 'AVGO', 'AUDC', 'CRSP', 'MRVL', 'VRT', 'NVDA', 
                   'PL', 'WMT', 'OXY', 'SGML', 'UNH', 'LQDT', 'MDT', 'ORCL', 'MSFT', 'TSLA', 'COST', 'MRK', 
@@ -204,26 +236,56 @@ if __name__ == "__main__":
                   'INOD', 'CAVA', 'SMR', 'PHUN', 'DEFT', 'TMC', 'SEZL', 'VLDXD', 'GOOGL', 'MU', 'BIIB', 
                   'TNXP', 'INVZ', 'TLS', 'VVX', 'RDW', 'MP', 'INTC', 'LRCX', 'DLTR', 'WM', 'SPIR', 'GE', 'GEV']
 
-    # my_tickers = ['EVER']
+    #=============================================================================================================
     
+    # Option 2: Programmatically select tickers from major indices
+    # Uncomment the lines below to use S&P 500 or NASDAQ-100 tickers instead of manual selection
+    
+    # Required headers for web scraping (prevents 403 errors from Wikipedia)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+
+    # Uncomment these lines to use S&P 500 tickers:
+    # my_tickers = sp500_tickers()
+    # my_tickers = my_tickers[:30]  # Limit to first 30 tickers for faster testing (remove for full analysis)
+    
+    # Uncomment these lines to use NASDAQ-100 tickers:
+    # my_tickers = nasdaq_tickers()
+    # my_tickers = my_tickers[:20]  # Limit to first 20 tickers for faster testing
+    
+    #=============================================================================================================
+    
+    #=============================================================================================================
+    # DATA COLLECTION AND PROCESSING
+    #=============================================================================================================
+    
+    print("=" * 60)
     print("🚀 Fetching current stock data...")
-    print(f"📊 Tickers: {', '.join(my_tickers)}")
+    print(f"📊 Tickers to analyze: {', '.join(my_tickers)}")
     print("=" * 60)
     
-    # Get data
+    # Fetch financial data for all selected tickers
+    # This will pull key metrics including P/E ratios, market cap, financial ratios, etc.
     df = get_stock_metrics(my_tickers)
     
-    # Check quality
+    # Perform data quality checks to identify missing data or suspicious values
+    # This helps identify potential issues like missing P/E ratios or extreme values
     warnings = check_data_quality(df)
     if warnings:
-        print("\n⚠️  QUALITY WARNINGS:")
+        print("\n⚠️  DATA QUALITY WARNINGS:")
         for warning in warnings:
             print(warning)
+
+    #=============================================================================================================
+    # DATA EXPORT
+    #=============================================================================================================
     
-    # Save with timestamp
+    # Create timestamped filename for data export (prevents overwriting previous analyses)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'stock_data_current_{timestamp}.csv'
+    filename = f'tapas-to-apex-investing/stock_data_current_{timestamp}.csv'
+    
+    # Export complete dataset to CSV for further analysis or record keeping
     df.to_csv(filename)
     
-    print(f"\n💾 Data saved to: {filename}")
-    print(f"📈 Shape: {df.shape[0]} metrics × {df.shape[1]} stocks")
+    print(f"📈 Dataset dimensions: {df.shape[0]} metrics × {df.shape[1]} stocks")
+    print(f"\n💾 Complete dataset saved to: {filename}")
+    print("=" * 60)
