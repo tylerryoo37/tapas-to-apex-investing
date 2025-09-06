@@ -1,4 +1,8 @@
 # Tapas to Apex Investing
+**Bite-Sized Ideas to Gourmet Gains**
+
+Like enjoying tapas — small, carefully crafted dishes that offer a taste of something greater — we serve up bite-sized investing ideas and systematic analysis, building flavor with each insight until we reach the apex: a gourmet portfolio that delivers peak risk-adjusted returns.
+
 ## A Complete Stock Analysis and Portfolio Evaluation Workflow
 
 This repository provides a systematic approach to stock screening, fundamental analysis, and portfolio evaluation using Python and financial data APIs. The workflow progresses from data extraction through analysis to portfolio performance measurement.
