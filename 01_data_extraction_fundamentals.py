@@ -228,13 +228,13 @@ if __name__ == "__main__":
     # my_tickers = ['EVER']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
-    my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
-                  'PLTR', 'META', 'CTRE', 'BLDP', 'AAPL', 'AVGO', 'AUDC', 'CRSP', 'MRVL', 'VRT', 'NVDA', 
-                  'PL', 'WMT', 'OXY', 'SGML', 'UNH', 'LQDT', 'MDT', 'ORCL', 'MSFT', 'TSLA', 'COST', 'MRK', 
-                  'BLNK', 'NXP', 'BNTX', 'QBTS', 'RGTI', 'ABT', 'SIRI', 'CCJ', 'ASML', 'ADBE', 'PYPL', 
-                  'SNOW', 'CHYM', 'RKLB', 'IONQ', 'ASTS', 'NOW', 'AISP', 'MRNA', 'CHGG', 'BBAI', 'QUBT', 
-                  'INOD', 'CAVA', 'SMR', 'PHUN', 'DEFT', 'TMC', 'SEZL', 'VLDXD', 'GOOGL', 'MU', 'BIIB', 
-                  'TNXP', 'INVZ', 'TLS', 'VVX', 'RDW', 'MP', 'INTC', 'LRCX', 'DLTR', 'WM', 'SPIR', 'GE', 'GEV']
+    # my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
+    #               'PLTR', 'META', 'CTRE', 'BLDP', 'AAPL', 'AVGO', 'AUDC', 'CRSP', 'MRVL', 'VRT', 'NVDA', 
+    #               'PL', 'WMT', 'OXY', 'SGML', 'UNH', 'LQDT', 'MDT', 'ORCL', 'MSFT', 'TSLA', 'COST', 'MRK', 
+    #               'BLNK', 'NXP', 'BNTX', 'QBTS', 'RGTI', 'ABT', 'SIRI', 'CCJ', 'ASML', 'ADBE', 'PYPL', 
+    #               'SNOW', 'CHYM', 'RKLB', 'IONQ', 'ASTS', 'NOW', 'AISP', 'MRNA', 'CHGG', 'BBAI', 'QUBT', 
+    #               'INOD', 'CAVA', 'SMR', 'PHUN', 'DEFT', 'TMC', 'SEZL', 'VLDXD', 'GOOGL', 'MU', 'BIIB', 
+    #               'TNXP', 'INVZ', 'TLS', 'VVX', 'RDW', 'MP', 'INTC', 'LRCX', 'DLTR', 'WM', 'SPIR', 'GE', 'GEV']
 
     #=============================================================================================================
     
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     # my_tickers = my_tickers[:30]  # Limit to first 30 tickers for faster testing (remove for full analysis)
     
     # Uncomment these lines to use NASDAQ-100 tickers:
-    # my_tickers = nasdaq_tickers()
+    my_tickers = nasdaq_tickers()
     # my_tickers = my_tickers[:20]  # Limit to first 20 tickers for faster testing
     
     #=============================================================================================================
