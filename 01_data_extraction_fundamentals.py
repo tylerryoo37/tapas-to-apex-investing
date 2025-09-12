@@ -30,6 +30,23 @@ def get_stock_metrics(tickers):
             recent_data = stock.history(period="5d")
             current_price = recent_data['Close'].iloc[-1] if not recent_data.empty else info.get('currentPrice', 'N/A')
             
+            # Get price data for momentum calculations
+            price_1m = stock.history(period="1mo")
+            price_3m = stock.history(period="3mo")
+            price_6m = stock.history(period="6mo")
+            price_1y = stock.history(period="1y")
+            
+            # Calculate momentum metrics (price change percentages)
+            momentum_1m = ((current_price - price_1m['Close'].iloc[0]) / price_1m['Close'].iloc[0] * 100) if not price_1m.empty and price_1m['Close'].iloc[0] > 0 else 'N/A'
+            momentum_3m = ((current_price - price_3m['Close'].iloc[0]) / price_3m['Close'].iloc[0] * 100) if not price_3m.empty and price_3m['Close'].iloc[0] > 0 else 'N/A'
+            momentum_6m = ((current_price - price_6m['Close'].iloc[0]) / price_6m['Close'].iloc[0] * 100) if not price_6m.empty and price_6m['Close'].iloc[0] > 0 else 'N/A'
+            momentum_1y = ((current_price - price_1y['Close'].iloc[0]) / price_1y['Close'].iloc[0] * 100) if not price_1y.empty and price_1y['Close'].iloc[0] > 0 else 'N/A'
+            
+            # Calculate relative strength vs 52-week range
+            high_52w = info.get('fiftyTwoWeekHigh', 'N/A')
+            low_52w = info.get('fiftyTwoWeekLow', 'N/A')
+            relative_strength = ((current_price - low_52w) / (high_52w - low_52w) * 100) if high_52w != 'N/A' and low_52w != 'N/A' and (high_52w - low_52w) > 0 else 'N/A'
+            
             # Get cash flow data 
             free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] 
             ttm_fcf = free_cash_flow_row.dropna().head(4).sum() if 'Free Cash Flow' in stock.quarterly_cashflow.index else 'N/A'
@@ -120,6 +137,13 @@ def get_stock_metrics(tickers):
                 '52W High': info.get('fiftyTwoWeekHigh', 'N/A'),
                 '52W Low': info.get('fiftyTwoWeekLow', 'N/A'),
                 'Beta': info.get('beta', 'N/A'), # measure of stock volatility compared to the market
+                
+                # MOMENTUM METRICS
+                'Momentum 1M (%)': round(momentum_1m, 2) if momentum_1m != 'N/A' else 'N/A', # Price change over last 1 month
+                'Momentum 3M (%)': round(momentum_3m, 2) if momentum_3m != 'N/A' else 'N/A', # Price change over last 3 months
+                'Momentum 6M (%)': round(momentum_6m, 2) if momentum_6m != 'N/A' else 'N/A', # Price change over last 6 months
+                'Momentum 1Y (%)': round(momentum_1y, 2) if momentum_1y != 'N/A' else 'N/A', # Price change over last 1 year
+                'Relative Strength (%)': round(relative_strength, 2) if relative_strength != 'N/A' else 'N/A', # Position within 52-week range (0-100%)
             }
             
             all_stock_data[ticker] = metrics
@@ -216,6 +240,15 @@ def nasdaq_tickers():
 
     return tickers
 
+def dow_jones_tickers():
+    """Get Dow Jones Industrial Average tickers from Wikipedia"""
+    url = 'https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average'
+    response = requests.get(url, headers=headers)
+    tables = pd.read_html(StringIO(response.text))
+    tickers = tables[2]['Symbol'].to_list()
+    tickers = [x.replace('.', '-') for x in tickers]
+    return tickers
+
 # SIMPLE USAGE
 if __name__ == "__main__":
     
@@ -225,7 +258,7 @@ if __name__ == "__main__":
     
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
-    # my_tickers = ['EVER']  # Single ticker example
+    my_tickers = ['PYPL']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
@@ -249,8 +282,13 @@ if __name__ == "__main__":
     # my_tickers = my_tickers[:30]  # Limit to first 30 tickers for faster testing (remove for full analysis)
     
     # Uncomment these lines to use NASDAQ-100 tickers:
-    my_tickers = nasdaq_tickers()
+    # my_tickers = nasdaq_tickers()
     # my_tickers = my_tickers[:20]  # Limit to first 20 tickers for faster testing
+    
+    # Uncomment these lines to use Dow Jones tickers:
+    # my_tickers = dow_jones_tickers()
+    # my_tickers = my_tickers[:1]  # Limit to first 20 tickers for faster testing
+    
     
     #=============================================================================================================
     

@@ -30,8 +30,8 @@ tapas-to-apex-investing/
 **Purpose**: Extract comprehensive fundamental metrics from Yahoo Finance for multiple stocks
 
 **Key Features**:
-- Fetches 40+ financial metrics per stock including P/E ratios, margins, cash flow, debt metrics
-- Supports manual ticker selection or programmatic selection from S&P 500/NASDAQ-100
+- Fetches 45+ financial metrics per stock including P/E ratios, margins, cash flow, debt metrics, momentum indicators
+- Supports manual ticker selection or programmatic selection from S&P 500/NASDAQ-100/Dow Jones
 - Includes data quality checks and error handling
 - Exports timestamped CSV files for analysis
 
@@ -41,11 +41,19 @@ tapas-to-apex-investing/
 - **Financial Health**: Current ratio, debt-to-equity, free cash flow, cash position
 - **Growth**: Revenue growth (YoY and QoQ), analyst targets
 - **Market Data**: 52-week range, beta, analyst recommendations
+- **Momentum**: 1M, 3M, 6M, 1Y price changes, relative strength within 52-week range
 
 **Usage**:
 ```python
-# Modify ticker list in the script
-my_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA']
+# Option 1: Manual ticker selection
+my_tickers = ['PYPL']  # Single ticker for quick testing
+# my_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA']  # Multiple tickers
+
+# Option 2: Use market indices
+# my_tickers = sp500_tickers()      # S&P 500 constituents
+# my_tickers = nasdaq_tickers()     # NASDAQ-100 constituents  
+# my_tickers = dow_jones_tickers()  # Dow Jones constituents
+
 # Run script to generate stock_data_current_[timestamp].csv
 ```
 
@@ -62,6 +70,7 @@ my_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA']
 - **Value Stocks**: P/E ≤ 15, P/B ≤ 3.3, ROE ≥ 12%, Current Ratio ≥ 1.2
 - **Growth Stocks**: Revenue growth ≥ 20%, Operating margins improving
 - **Quality Stocks**: Low debt-to-equity, positive free cash flow
+- **Momentum Stocks**: 3M momentum > 10%, Relative strength > 60%, accelerating momentum
 
 ### Step 3: Individual Analysis (`03_fundamentals_analysis.ipynb`)
 **Purpose**: Deep-dive analysis of selected stocks with Claude Code integration
@@ -77,8 +86,9 @@ my_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA']
 2. Financial health dashboard with traffic light indicators
 3. Valuation metrics analysis
 4. Growth and profitability assessment
-5. Investment recommendation with score (0-100)
-6. Risk analysis and position sizing guidance
+5. Momentum analysis (short-term and long-term trends)
+6. Investment recommendation with score (0-100)
+7. Risk analysis and position sizing guidance
 
 ### Step 4: Quarterly Deep-Dive (`04_quarterly_analysis_wip.ipynb`)
 **Purpose**: Quarterly financial statement analysis (Work in Progress)
@@ -166,13 +176,59 @@ The notebooks are designed for seamless integration with Claude Code MCP:
 
 ## 📈 Key Features
 
-- **Comprehensive Screening**: 40+ financial metrics with customizable filters
+- **Comprehensive Screening**: 45+ financial metrics with customizable filters including momentum indicators
 - **Statistical Analysis**: Alpha/beta calculation, Sharpe ratios, statistical significance
 - **Risk Assessment**: Volatility analysis, correlation studies, position sizing
 - **Benchmarking**: Performance comparison against major indices
+- **Momentum Analysis**: Multi-timeframe momentum tracking and relative strength indicators
 - **Data Quality**: Built-in validation, error handling, and warning systems
 - **Flexible Analysis**: Support for individual stocks or portfolio-level analysis
 - **Export Capabilities**: CSV outputs with timestamps for record keeping
+
+## 📊 Momentum Analysis Guide
+
+### **Momentum Metrics Evaluation**
+
+**Positive Momentum (>0%)**:
+- **Strong momentum**: >15% gains suggest strong upward trend
+- **Moderate momentum**: 5-15% gains indicate steady growth
+- **Weak momentum**: 0-5% gains show minimal upward movement
+
+**Negative Momentum (<0%)**:
+- **Minor decline**: 0 to -5% suggests temporary weakness
+- **Moderate decline**: -5% to -15% indicates concerning downtrend
+- **Strong decline**: <-15% shows significant weakness
+
+### **Time Frame Analysis**
+
+- **1M Momentum**: Short-term sentiment, most volatile
+- **3M Momentum**: Quarterly trend, good for earnings cycle analysis  
+- **6M Momentum**: Medium-term trend, filters out short-term noise
+- **1Y Momentum**: Long-term trend, shows fundamental strength
+
+### **Relative Strength (0-100%)**
+
+- **80-100%**: Near 52-week highs - potential breakout or overvalued
+- **60-80%**: Upper range - strong performance but room to grow
+- **40-60%**: Mid-range - neutral positioning
+- **20-40%**: Lower range - potential value opportunity or weakness
+- **0-20%**: Near 52-week lows - deeply oversold or fundamental issues
+
+### **Combined Analysis Patterns**
+
+**Bullish Signals**:
+- Accelerating momentum (1M > 3M > 6M > 1Y)
+- High relative strength (>70%) with positive momentum
+- Consistent positive momentum across all timeframes
+
+**Bearish Signals**:
+- Decelerating momentum (1Y > 6M > 3M > 1M)
+- Low relative strength (<30%) with negative momentum
+- Consistent negative momentum across timeframes
+
+**Value Opportunities**:
+- Low relative strength (<40%) but improving short-term momentum
+- Strong fundamentals with temporary momentum weakness
 
 ## 🎯 Investment Philosophy
 
@@ -180,6 +236,7 @@ This toolkit supports multiple investment approaches:
 - **Value Investing**: P/E, P/B screening with profitability filters
 - **Growth Investing**: Revenue growth and margin expansion focus
 - **Quality Investing**: Financial strength and competitive moat analysis
+- **Momentum Investing**: Multi-timeframe momentum and relative strength analysis
 - **Portfolio Theory**: Risk-adjusted returns and efficient frontier concepts
 
 ## ⚠️ Disclaimers
@@ -195,7 +252,7 @@ This toolkit supports multiple investment approaches:
 
 - [ ] Complete quarterly analysis notebook
 - [ ] Add macro/sector indicators to enhance analysis
-- [ ] Add/modify value metrics (i.e., momentum) that could be useful for picking stocks
+- [x] Add momentum metrics (1M, 3M, 6M, 1Y price changes, relative strength)
 - [ ] Implement backtesting framework
 - [ ] Add sector rotation analysis
 - [ ] Create automated reporting dashboard
