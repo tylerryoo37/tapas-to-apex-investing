@@ -30,7 +30,7 @@ tapas-to-apex-investing/
 **Purpose**: Extract comprehensive fundamental metrics from Yahoo Finance for multiple stocks
 
 **Key Features**:
-- Fetches 45+ financial metrics per stock including P/E ratios, margins, cash flow, debt metrics, momentum indicators
+- Fetches 55+ financial metrics per stock including P/E ratios, margins, cash flow, debt metrics, momentum indicators, and volume analysis
 - Supports manual ticker selection or programmatic selection from S&P 500/NASDAQ-100/Dow Jones
 - Includes data quality checks and error handling
 - Exports timestamped CSV files for analysis
@@ -42,6 +42,7 @@ tapas-to-apex-investing/
 - **Growth**: Revenue growth (YoY and QoQ), analyst targets
 - **Market Data**: 52-week range, beta, analyst recommendations
 - **Momentum**: 1M, 3M, 6M, 1Y price changes, relative strength within 52-week range
+- **Volume Analysis**: Current volume, historical averages, volume change percentages, volume ratios (attention/interest indicators)
 
 **Usage**:
 ```python
@@ -230,6 +231,66 @@ The notebooks are designed for seamless integration with Claude Code MCP:
 - Low relative strength (<40%) but improving short-term momentum
 - Strong fundamentals with temporary momentum weakness
 
+## 📊 Volume Analysis Guide
+
+### **Volume Metrics Overview**
+
+**Current Volume vs Historical Averages**:
+- **Current Volume**: Latest trading session volume
+- **Avg Volume 1M/3M**: Historical average daily volume over specified periods
+- **Volume Change %**: Percentage change vs historical average (positive = above normal attention)
+- **Volume Ratio**: Multiplier showing current volume relative to average (>1 = above normal)
+
+### **Volume Change Interpretation**
+
+**High Volume Activity (>50% above average)**:
+- **Breaking news or events**: Earnings, partnerships, regulatory changes
+- **Institutional activity**: Large fund buying/selling
+- **Technical breakouts**: Price breaking key resistance/support with volume confirmation
+
+**Moderate Volume Activity (10-50% above average)**:
+- **Increased interest**: Growing awareness or gradual accumulation
+- **Sector momentum**: Industry-wide attention driving volume
+- **Options expiration**: Quarterly/monthly options driving volume
+
+**Below Average Volume (<-20% below average)**:
+- **Lack of interest**: Limited attention from investors
+- **Holiday periods**: Reduced trading activity
+- **Consolidation phase**: Price range-bound with minimal catalysts
+
+### **Volume Ratio Analysis**
+
+- **>3x average**: Exceptional attention - major news or significant institutional activity
+- **2-3x average**: High attention - above-normal interest, potential catalyst
+- **1.5-2x average**: Elevated attention - moderate increase in trading interest  
+- **1-1.5x average**: Normal attention - typical trading volume
+- **0.5-1x average**: Below normal attention - reduced interest
+- **<0.5x average**: Very low attention - minimal trading interest
+
+### **Combined Volume-Price Analysis**
+
+**Bullish Volume Patterns**:
+- **Volume surge + price up**: Strong buying pressure, institutional accumulation
+- **Volume surge + price flat**: Accumulation phase, potential breakout setup
+- **Sustained high volume + uptrend**: Confirmed bullish momentum
+
+**Bearish Volume Patterns**:
+- **Volume surge + price down**: Distribution, institutional selling
+- **High volume + price breakdown**: Confirmed bearish breakdown
+- **Volume decrease in uptrend**: Weakening momentum, potential reversal
+
+**Neutral/Caution Patterns**:
+- **Volume surge + sideways price**: Uncertainty, mixed sentiment
+- **Low volume + price movement**: Weak conviction, potential false signal
+- **Declining volume trend**: Decreasing interest regardless of price direction
+
+### **Time Frame Analysis**
+
+- **1M Volume Change**: Most recent sentiment shift, react to immediate catalysts
+- **3M Volume Change**: Quarterly trend, good for earnings cycle analysis
+- **6M Volume Change**: Medium-term interest trend, filters out noise
+- **1Y Volume Change**: Long-term attention pattern, shows fundamental interest evolution
+
 ## 🎯 Investment Philosophy
 
 This toolkit supports multiple investment approaches:
@@ -253,6 +314,7 @@ This toolkit supports multiple investment approaches:
 - [ ] Complete quarterly analysis notebook
 - [ ] Add macro/sector indicators to enhance analysis
 - [x] Add momentum metrics (1M, 3M, 6M, 1Y price changes, relative strength)
+- [x] Add volume metrics (volume changes, ratios, attention indicators)
 - [ ] Implement backtesting framework
 - [ ] Add sector rotation analysis
 - [ ] Create automated reporting dashboard

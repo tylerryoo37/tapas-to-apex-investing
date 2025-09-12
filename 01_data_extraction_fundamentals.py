@@ -47,6 +47,25 @@ def get_stock_metrics(tickers):
             low_52w = info.get('fiftyTwoWeekLow', 'N/A')
             relative_strength = ((current_price - low_52w) / (high_52w - low_52w) * 100) if high_52w != 'N/A' and low_52w != 'N/A' and (high_52w - low_52w) > 0 else 'N/A'
             
+            # Calculate volume change metrics (attention/interest indicators)
+            current_volume = recent_data['Volume'].iloc[-1] if not recent_data.empty else 'N/A'
+            avg_volume_1m = price_1m['Volume'].mean() if not price_1m.empty else 'N/A'
+            avg_volume_3m = price_3m['Volume'].mean() if not price_3m.empty else 'N/A'
+            avg_volume_6m = price_6m['Volume'].mean() if not price_6m.empty else 'N/A'
+            avg_volume_1y = price_1y['Volume'].mean() if not price_1y.empty else 'N/A'
+            
+            # Volume change percentages vs historical averages
+            volume_change_1m = ((current_volume - avg_volume_1m) / avg_volume_1m * 100) if current_volume != 'N/A' and avg_volume_1m != 'N/A' and avg_volume_1m > 0 else 'N/A'
+            volume_change_3m = ((current_volume - avg_volume_3m) / avg_volume_3m * 100) if current_volume != 'N/A' and avg_volume_3m != 'N/A' and avg_volume_3m > 0 else 'N/A'
+            volume_change_6m = ((current_volume - avg_volume_6m) / avg_volume_6m * 100) if current_volume != 'N/A' and avg_volume_6m != 'N/A' and avg_volume_6m > 0 else 'N/A'
+            volume_change_1y = ((current_volume - avg_volume_1y) / avg_volume_1y * 100) if current_volume != 'N/A' and avg_volume_1y != 'N/A' and avg_volume_1y > 0 else 'N/A'
+            
+            # Relative volume ratios (current volume vs historical averages)
+            volume_ratio_1m = (current_volume / avg_volume_1m) if current_volume != 'N/A' and avg_volume_1m != 'N/A' and avg_volume_1m > 0 else 'N/A'
+            volume_ratio_3m = (current_volume / avg_volume_3m) if current_volume != 'N/A' and avg_volume_3m != 'N/A' and avg_volume_3m > 0 else 'N/A'
+            volume_ratio_6m = (current_volume / avg_volume_6m) if current_volume != 'N/A' and avg_volume_6m != 'N/A' and avg_volume_6m > 0 else 'N/A'
+            volume_ratio_1y = (current_volume / avg_volume_1y) if current_volume != 'N/A' and avg_volume_1y != 'N/A' and avg_volume_1y > 0 else 'N/A'
+            
             # Get cash flow data 
             free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] 
             ttm_fcf = free_cash_flow_row.dropna().head(4).sum() if 'Free Cash Flow' in stock.quarterly_cashflow.index else 'N/A'
@@ -144,6 +163,19 @@ def get_stock_metrics(tickers):
                 'Momentum 6M (%)': round(momentum_6m, 2) if momentum_6m != 'N/A' else 'N/A', # Price change over last 6 months
                 'Momentum 1Y (%)': round(momentum_1y, 2) if momentum_1y != 'N/A' else 'N/A', # Price change over last 1 year
                 'Relative Strength (%)': round(relative_strength, 2) if relative_strength != 'N/A' else 'N/A', # Position within 52-week range (0-100%)
+                
+                # VOLUME METRICS (Attention/Interest Indicators)
+                'Current Volume': int(current_volume) if current_volume != 'N/A' else 'N/A', # Latest trading volume
+                'Avg Volume 1M': int(avg_volume_1m) if avg_volume_1m != 'N/A' else 'N/A', # Average daily volume over 1 month
+                'Avg Volume 3M': int(avg_volume_3m) if avg_volume_3m != 'N/A' else 'N/A', # Average daily volume over 3 months
+                'Volume Change 1M (%)': round(volume_change_1m, 2) if volume_change_1m != 'N/A' else 'N/A', # Volume change vs 1-month average
+                'Volume Change 3M (%)': round(volume_change_3m, 2) if volume_change_3m != 'N/A' else 'N/A', # Volume change vs 3-month average
+                'Volume Change 6M (%)': round(volume_change_6m, 2) if volume_change_6m != 'N/A' else 'N/A', # Volume change vs 6-month average
+                'Volume Change 1Y (%)': round(volume_change_1y, 2) if volume_change_1y != 'N/A' else 'N/A', # Volume change vs 1-year average
+                'Volume Ratio 1M': round(volume_ratio_1m, 2) if volume_ratio_1m != 'N/A' else 'N/A', # Current volume / 1-month avg (>1 = above normal)
+                'Volume Ratio 3M': round(volume_ratio_3m, 2) if volume_ratio_3m != 'N/A' else 'N/A', # Current volume / 3-month avg (>1 = above normal)
+                'Volume Ratio 6M': round(volume_ratio_6m, 2) if volume_ratio_6m != 'N/A' else 'N/A', # Current volume / 6-month avg (>1 = above normal)
+                'Volume Ratio 1Y': round(volume_ratio_1y, 2) if volume_ratio_1y != 'N/A' else 'N/A', # Current volume / 1-year avg (>1 = above normal)
             }
             
             all_stock_data[ticker] = metrics
@@ -258,7 +290,7 @@ if __name__ == "__main__":
     
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
-    my_tickers = ['PYPL']  # Single ticker example
+    my_tickers = ['PL']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
