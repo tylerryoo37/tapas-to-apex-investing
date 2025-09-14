@@ -45,6 +45,12 @@ def get_stock_metrics(tickers):
             # Calculate relative strength vs 52-week range
             high_52w = info.get('fiftyTwoWeekHigh', 'N/A')
             low_52w = info.get('fiftyTwoWeekLow', 'N/A')
+            
+            # Calculate price vs moving averages
+            fifty_day_avg = info.get('fiftyDayAverage', 'N/A')
+            two_hundred_day_avg = info.get('twoHundredDayAverage', 'N/A')
+            price_vs_50ma = (current_price / fifty_day_avg - 1) if current_price != 'N/A' and fifty_day_avg not in ['N/A', None, 0] else 'N/A'
+            price_vs_200ma = (current_price / two_hundred_day_avg - 1) if current_price != 'N/A' and two_hundred_day_avg not in ['N/A', None, 0] else 'N/A'
             relative_strength = ((current_price - low_52w) / (high_52w - low_52w) * 100) if high_52w != 'N/A' and low_52w != 'N/A' and (high_52w - low_52w) > 0 else 'N/A'
             
             # Calculate volume change metrics (attention/interest indicators)
@@ -65,6 +71,13 @@ def get_stock_metrics(tickers):
             volume_ratio_3m = (current_volume / avg_volume_3m) if current_volume != 'N/A' and avg_volume_3m != 'N/A' and avg_volume_3m > 0 else 'N/A'
             volume_ratio_6m = (current_volume / avg_volume_6m) if current_volume != 'N/A' and avg_volume_6m != 'N/A' and avg_volume_6m > 0 else 'N/A'
             volume_ratio_1y = (current_volume / avg_volume_1y) if current_volume != 'N/A' and avg_volume_1y != 'N/A' and avg_volume_1y > 0 else 'N/A'
+
+            # Calculate volume ratios from info data
+            volume_info = info.get('volume', 'N/A')
+            avg_volume_info = info.get('averageVolume', 'N/A')
+            avg_volume_10d_info = info.get('averageVolume10days', 'N/A')
+            volume_ratio_info = (volume_info / avg_volume_info) if volume_info != 'N/A' and avg_volume_info not in ['N/A', None, 0] else 'N/A'
+            volume_trend_info = (avg_volume_10d_info / avg_volume_info) if avg_volume_10d_info != 'N/A' and avg_volume_info not in ['N/A', None, 0] else 'N/A'
             
             # Get cash flow data 
             free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] 
@@ -151,6 +164,9 @@ def get_stock_metrics(tickers):
                 # ANALYST DATA
                 'Target Price': info.get('targetMeanPrice', 'N/A'), # Average target price set by analysts
                 'Recommendation': info.get('recommendationMean', 'N/A'), # Average recommendation score from analysts (1-5 scale)
+                'Institutional Ownership (%)': round(info.get('heldPercentInstitutions', 0) * 100, 2) if info.get('heldPercentInstitutions') not in [None, 'N/A'] else 'N/A', # Percentage held by institutions
+                'Insider Ownership (%)': round(info.get('heldPercentInsiders', 0) * 100, 2) if info.get('heldPercentInsiders') not in [None, 'N/A'] else 'N/A', # Percentage held by insiders
+                'Short Ratio': round(info.get('shortRatio', 0), 2) if info.get('shortRatio') not in [None, 'N/A'] else 'N/A', # Days to cover short positions
                 
                 # TRADING DATA
                 '52W High': info.get('fiftyTwoWeekHigh', 'N/A'),
@@ -163,6 +179,8 @@ def get_stock_metrics(tickers):
                 'Momentum 6M (%)': round(momentum_6m, 2) if momentum_6m != 'N/A' else 'N/A', # Price change over last 6 months
                 'Momentum 1Y (%)': round(momentum_1y, 2) if momentum_1y != 'N/A' else 'N/A', # Price change over last 1 year
                 'Relative Strength (%)': round(relative_strength, 2) if relative_strength != 'N/A' else 'N/A', # Position within 52-week range (0-100%)
+                'Price vs 50MA (%)': round(price_vs_50ma * 100, 2) if price_vs_50ma != 'N/A' else 'N/A', # Current price relative to 50-day moving average
+                'Price vs 200MA (%)': round(price_vs_200ma * 100, 2) if price_vs_200ma != 'N/A' else 'N/A', # Current price relative to 200-day moving average
                 
                 # VOLUME METRICS (Attention/Interest Indicators)
                 'Current Volume': int(current_volume) if current_volume != 'N/A' else 'N/A', # Latest trading volume
@@ -172,10 +190,13 @@ def get_stock_metrics(tickers):
                 'Volume Change 3M (%)': round(volume_change_3m, 2) if volume_change_3m != 'N/A' else 'N/A', # Volume change vs 3-month average
                 'Volume Change 6M (%)': round(volume_change_6m, 2) if volume_change_6m != 'N/A' else 'N/A', # Volume change vs 6-month average
                 'Volume Change 1Y (%)': round(volume_change_1y, 2) if volume_change_1y != 'N/A' else 'N/A', # Volume change vs 1-year average
+                'Volume Ratio (Avg)': round(volume_ratio_info, 2) if volume_ratio_info != 'N/A' else 'N/A', # Current volume vs average volume (from info)
+                'Volume Trend (10d/Avg)': round(volume_trend_info, 2) if volume_trend_info != 'N/A' else 'N/A', # 10-day volume trend vs average
                 'Volume Ratio 1M': round(volume_ratio_1m, 2) if volume_ratio_1m != 'N/A' else 'N/A', # Current volume / 1-month avg (>1 = above normal)
                 'Volume Ratio 3M': round(volume_ratio_3m, 2) if volume_ratio_3m != 'N/A' else 'N/A', # Current volume / 3-month avg (>1 = above normal)
                 'Volume Ratio 6M': round(volume_ratio_6m, 2) if volume_ratio_6m != 'N/A' else 'N/A', # Current volume / 6-month avg (>1 = above normal)
                 'Volume Ratio 1Y': round(volume_ratio_1y, 2) if volume_ratio_1y != 'N/A' else 'N/A', # Current volume / 1-year avg (>1 = above normal)
+
             }
             
             all_stock_data[ticker] = metrics
@@ -290,7 +311,7 @@ if __name__ == "__main__":
     
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
-    my_tickers = ['PL']  # Single ticker example
+    # my_tickers = ['PHM']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
@@ -314,7 +335,7 @@ if __name__ == "__main__":
     # my_tickers = my_tickers[:30]  # Limit to first 30 tickers for faster testing (remove for full analysis)
     
     # Uncomment these lines to use NASDAQ-100 tickers:
-    # my_tickers = nasdaq_tickers()
+    my_tickers = nasdaq_tickers()
     # my_tickers = my_tickers[:20]  # Limit to first 20 tickers for faster testing
     
     # Uncomment these lines to use Dow Jones tickers:
