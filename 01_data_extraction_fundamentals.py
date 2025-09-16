@@ -83,7 +83,7 @@ def get_stock_metrics(tickers):
             # Get cash flow data
             free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else pd.Series()
             ttm_fcf = free_cash_flow_row.dropna().head(4).sum() if 'Free Cash Flow' in stock.quarterly_cashflow.index else np.nan
-            free_cash_flow_row_year = stock.cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else pd.Series()
+            free_cash_flow_row_year = stock.cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.cashflow.index else pd.Series()
             recent_fcf = free_cash_flow_row_year.dropna().iloc[0] if not isinstance(free_cash_flow_row_year, float) and len(free_cash_flow_row_year.dropna()) > 0 else np.nan
             
             # Get Ebitda data
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
     # ticker_type = 'tta'
-    # my_tickers = ['CCEP']  # Single ticker example
+    my_tickers = ['IBM', 'NICE', 'ADBE', 'STGW', 'PGY', 'KOPN', 'ENPH', 'SMCI', 'INTC', 'DLTR']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # ticker_type = 'tta'
@@ -340,20 +340,22 @@ if __name__ == "__main__":
     # my_tickers = sp500_tickers()
     
     # Uncomment these lines to use NASDAQ-100 tickers:
-    ticker_type = 'nasdaq'
-    my_tickers = nasdaq_tickers()
+    # ticker_type = 'nasdaq'
+    # my_tickers = nasdaq_tickers()
     
     # Uncomment these lines to use Dow Jones tickers:
     # ticker_type = 'dowjones'
     # my_tickers = dow_jones_tickers()
     
-    # ticker_type = 'random500_3'
+    # Uncomment these lines to get a selection of 500-1000 tickers from a larger list
     # all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
+    # ticker_type = 'random500'
+    # my_tickers = random.sample(all_tickers, 500)
     
     # my_tickers = all_tickers[1001:1501]
     # my_tickers = all_tickers[501:1001]
     # my_tickers = all_tickers[0:500]
-    # random.sample(all_tickers, 500)
+    # my_tickers = random.sample(all_tickers, 500)
     
     #=============================================================================================================
     
