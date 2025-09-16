@@ -5,6 +5,7 @@ import time
 import numpy as np 
 import requests
 from io import StringIO
+import random
 
 def get_stock_metrics(tickers):
     """
@@ -28,7 +29,7 @@ def get_stock_metrics(tickers):
             
             # Get recent price for current data
             recent_data = stock.history(period="5d")
-            current_price = recent_data['Close'].iloc[-1] if not recent_data.empty else info.get('currentPrice', 'N/A')
+            current_price = recent_data['Close'].iloc[-1] if not recent_data.empty else info.get('currentPrice', np.nan)
             
             # Get price data for momentum calculations
             price_1m = stock.history(period="1mo")
@@ -37,74 +38,74 @@ def get_stock_metrics(tickers):
             price_1y = stock.history(period="1y")
             
             # Calculate momentum metrics (price change percentages)
-            momentum_1m = ((current_price - price_1m['Close'].iloc[0]) / price_1m['Close'].iloc[0] * 100) if not price_1m.empty and price_1m['Close'].iloc[0] > 0 else 'N/A'
-            momentum_3m = ((current_price - price_3m['Close'].iloc[0]) / price_3m['Close'].iloc[0] * 100) if not price_3m.empty and price_3m['Close'].iloc[0] > 0 else 'N/A'
-            momentum_6m = ((current_price - price_6m['Close'].iloc[0]) / price_6m['Close'].iloc[0] * 100) if not price_6m.empty and price_6m['Close'].iloc[0] > 0 else 'N/A'
-            momentum_1y = ((current_price - price_1y['Close'].iloc[0]) / price_1y['Close'].iloc[0] * 100) if not price_1y.empty and price_1y['Close'].iloc[0] > 0 else 'N/A'
+            momentum_1m = ((current_price - price_1m['Close'].iloc[0]) / price_1m['Close'].iloc[0] * 100) if not price_1m.empty and price_1m['Close'].iloc[0] > 0 and not pd.isna(current_price) else np.nan
+            momentum_3m = ((current_price - price_3m['Close'].iloc[0]) / price_3m['Close'].iloc[0] * 100) if not price_3m.empty and price_3m['Close'].iloc[0] > 0 and not pd.isna(current_price) else np.nan
+            momentum_6m = ((current_price - price_6m['Close'].iloc[0]) / price_6m['Close'].iloc[0] * 100) if not price_6m.empty and price_6m['Close'].iloc[0] > 0 and not pd.isna(current_price) else np.nan
+            momentum_1y = ((current_price - price_1y['Close'].iloc[0]) / price_1y['Close'].iloc[0] * 100) if not price_1y.empty and price_1y['Close'].iloc[0] > 0 and not pd.isna(current_price) else np.nan
             
             # Calculate relative strength vs 52-week range
-            high_52w = info.get('fiftyTwoWeekHigh', 'N/A')
-            low_52w = info.get('fiftyTwoWeekLow', 'N/A')
+            high_52w = info.get('fiftyTwoWeekHigh', np.nan)
+            low_52w = info.get('fiftyTwoWeekLow', np.nan)
             
             # Calculate price vs moving averages
-            fifty_day_avg = info.get('fiftyDayAverage', 'N/A')
-            two_hundred_day_avg = info.get('twoHundredDayAverage', 'N/A')
-            price_vs_50ma = (current_price / fifty_day_avg - 1) if current_price != 'N/A' and fifty_day_avg not in ['N/A', None, 0] else 'N/A'
-            price_vs_200ma = (current_price / two_hundred_day_avg - 1) if current_price != 'N/A' and two_hundred_day_avg not in ['N/A', None, 0] else 'N/A'
-            relative_strength = ((current_price - low_52w) / (high_52w - low_52w) * 100) if high_52w != 'N/A' and low_52w != 'N/A' and (high_52w - low_52w) > 0 else 'N/A'
+            fifty_day_avg = info.get('fiftyDayAverage', np.nan)
+            two_hundred_day_avg = info.get('twoHundredDayAverage', np.nan)
+            price_vs_50ma = (current_price / fifty_day_avg - 1) if not pd.isna(current_price) and not pd.isna(fifty_day_avg) and fifty_day_avg != 0 else np.nan
+            price_vs_200ma = (current_price / two_hundred_day_avg - 1) if not pd.isna(current_price) and not pd.isna(two_hundred_day_avg) and two_hundred_day_avg != 0 else np.nan
+            relative_strength = ((current_price - low_52w) / (high_52w - low_52w) * 100) if not pd.isna(high_52w) and not pd.isna(low_52w) and (high_52w - low_52w) > 0 and not pd.isna(current_price) else np.nan
             
             # Calculate volume change metrics (attention/interest indicators)
-            current_volume = recent_data['Volume'].iloc[-1] if not recent_data.empty else 'N/A'
-            avg_volume_1m = price_1m['Volume'].mean() if not price_1m.empty else 'N/A'
-            avg_volume_3m = price_3m['Volume'].mean() if not price_3m.empty else 'N/A'
-            avg_volume_6m = price_6m['Volume'].mean() if not price_6m.empty else 'N/A'
-            avg_volume_1y = price_1y['Volume'].mean() if not price_1y.empty else 'N/A'
+            current_volume = recent_data['Volume'].iloc[-1] if not recent_data.empty else np.nan
+            avg_volume_1m = price_1m['Volume'].mean() if not price_1m.empty else np.nan
+            avg_volume_3m = price_3m['Volume'].mean() if not price_3m.empty else np.nan
+            avg_volume_6m = price_6m['Volume'].mean() if not price_6m.empty else np.nan
+            avg_volume_1y = price_1y['Volume'].mean() if not price_1y.empty else np.nan
             
             # Volume change percentages vs historical averages
-            volume_change_1m = ((current_volume - avg_volume_1m) / avg_volume_1m * 100) if current_volume != 'N/A' and avg_volume_1m != 'N/A' and avg_volume_1m > 0 else 'N/A'
-            volume_change_3m = ((current_volume - avg_volume_3m) / avg_volume_3m * 100) if current_volume != 'N/A' and avg_volume_3m != 'N/A' and avg_volume_3m > 0 else 'N/A'
-            volume_change_6m = ((current_volume - avg_volume_6m) / avg_volume_6m * 100) if current_volume != 'N/A' and avg_volume_6m != 'N/A' and avg_volume_6m > 0 else 'N/A'
-            volume_change_1y = ((current_volume - avg_volume_1y) / avg_volume_1y * 100) if current_volume != 'N/A' and avg_volume_1y != 'N/A' and avg_volume_1y > 0 else 'N/A'
+            volume_change_1m = ((current_volume - avg_volume_1m) / avg_volume_1m * 100) if not pd.isna(current_volume) and not pd.isna(avg_volume_1m) and avg_volume_1m > 0 else np.nan
+            volume_change_3m = ((current_volume - avg_volume_3m) / avg_volume_3m * 100) if not pd.isna(current_volume) and not pd.isna(avg_volume_3m) and avg_volume_3m > 0 else np.nan
+            volume_change_6m = ((current_volume - avg_volume_6m) / avg_volume_6m * 100) if not pd.isna(current_volume) and not pd.isna(avg_volume_6m) and avg_volume_6m > 0 else np.nan
+            volume_change_1y = ((current_volume - avg_volume_1y) / avg_volume_1y * 100) if not pd.isna(current_volume) and not pd.isna(avg_volume_1y) and avg_volume_1y > 0 else np.nan
             
             # Relative volume ratios (current volume vs historical averages)
-            volume_ratio_1m = (current_volume / avg_volume_1m) if current_volume != 'N/A' and avg_volume_1m != 'N/A' and avg_volume_1m > 0 else 'N/A'
-            volume_ratio_3m = (current_volume / avg_volume_3m) if current_volume != 'N/A' and avg_volume_3m != 'N/A' and avg_volume_3m > 0 else 'N/A'
-            volume_ratio_6m = (current_volume / avg_volume_6m) if current_volume != 'N/A' and avg_volume_6m != 'N/A' and avg_volume_6m > 0 else 'N/A'
-            volume_ratio_1y = (current_volume / avg_volume_1y) if current_volume != 'N/A' and avg_volume_1y != 'N/A' and avg_volume_1y > 0 else 'N/A'
+            volume_ratio_1m = (current_volume / avg_volume_1m) if not pd.isna(current_volume) and not pd.isna(avg_volume_1m) and avg_volume_1m > 0 else np.nan
+            volume_ratio_3m = (current_volume / avg_volume_3m) if not pd.isna(current_volume) and not pd.isna(avg_volume_3m) and avg_volume_3m > 0 else np.nan
+            volume_ratio_6m = (current_volume / avg_volume_6m) if not pd.isna(current_volume) and not pd.isna(avg_volume_6m) and avg_volume_6m > 0 else np.nan
+            volume_ratio_1y = (current_volume / avg_volume_1y) if not pd.isna(current_volume) and not pd.isna(avg_volume_1y) and avg_volume_1y > 0 else np.nan
 
             # Calculate volume ratios from info data
-            volume_info = info.get('volume', 'N/A')
-            avg_volume_info = info.get('averageVolume', 'N/A')
-            avg_volume_10d_info = info.get('averageVolume10days', 'N/A')
-            volume_ratio_info = (volume_info / avg_volume_info) if volume_info != 'N/A' and avg_volume_info not in ['N/A', None, 0] else 'N/A'
-            volume_trend_info = (avg_volume_10d_info / avg_volume_info) if avg_volume_10d_info != 'N/A' and avg_volume_info not in ['N/A', None, 0] else 'N/A'
+            volume_info = info.get('volume', np.nan)
+            avg_volume_info = info.get('averageVolume', np.nan)
+            avg_volume_10d_info = info.get('averageVolume10days', np.nan)
+            volume_ratio_info = (volume_info / avg_volume_info) if not pd.isna(volume_info) and not pd.isna(avg_volume_info) and avg_volume_info != 0 else np.nan
+            volume_trend_info = (avg_volume_10d_info / avg_volume_info) if not pd.isna(avg_volume_10d_info) and not pd.isna(avg_volume_info) and avg_volume_info != 0 else np.nan
             
             # Get cash flow data 
             free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] 
-            ttm_fcf = free_cash_flow_row.dropna().head(4).sum() if 'Free Cash Flow' in stock.quarterly_cashflow.index else 'N/A'
-            free_cash_flow_row_year = stock.cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else 'N/A'
+            ttm_fcf = free_cash_flow_row.dropna().head(4).sum() if 'Free Cash Flow' in stock.quarterly_cashflow.index else np.nan
+            free_cash_flow_row_year = stock.cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else np.nan
             recent_fcf = free_cash_flow_row_year.dropna().iloc[0]
             
             # Get Ebitda data
-            ttm_ebitda = q_info.loc['EBITDA'].dropna().head(4).sum() if 'EBITDA' in q_info.index else 'N/A'
+            ttm_ebitda = q_info.loc['EBITDA'].dropna().head(4).sum() if 'EBITDA' in q_info.index else np.nan
             
             # Get Operating Margin
-            ttm_op_income = q_info.loc['Operating Income'].dropna().head(4).sum() if 'Operating Income' in q_info.index else 'N/A'
-            ttm_total_revenue = q_info.loc['Total Revenue'].dropna().head(4).sum() if 'Total Revenue' in q_info.index else 'N/A'
-            ttm_operating_margin = ttm_op_income / ttm_total_revenue if ttm_total_revenue > 0 else 'N/A'
+            ttm_op_income = q_info.loc['Operating Income'].dropna().head(4).sum() if 'Operating Income' in q_info.index else np.nan
+            ttm_total_revenue = q_info.loc['Total Revenue'].dropna().head(4).sum() if 'Total Revenue' in q_info.index else np.nan
+            ttm_operating_margin = ttm_op_income / ttm_total_revenue if ttm_total_revenue > 0 else np.nan
             
             # Get Quarterly Revenue Growth
-            revenue_quarters = q_info.loc['Total Revenue'].dropna().head(2) if 'Total Revenue' in q_info.index else 'N/A'
-            quarterly_revenue_growth = ((revenue_quarters.iloc[0] - revenue_quarters.iloc[1]) / revenue_quarters.iloc[1]) if len(revenue_quarters) == 2 and revenue_quarters.iloc[1] != 0 else 'N/A'
+            revenue_quarters = q_info.loc['Total Revenue'].dropna().head(2) if 'Total Revenue' in q_info.index else np.nan
+            quarterly_revenue_growth = ((revenue_quarters.iloc[0] - revenue_quarters.iloc[1]) / revenue_quarters.iloc[1]) if len(revenue_quarters) == 2 and revenue_quarters.iloc[1] != 0 else np.nan
             
             # Get Gross Margin
-            ttm_gross_profit = q_info.loc['Gross Profit'].dropna().head(4).sum() if 'Gross Profit' in q_info.index else 'N/A'
-            ttm_total_revenue = q_info.loc['Total Revenue'].dropna().head(4).sum() if 'Total Revenue' in q_info.index else 'N/A'
-            ttm_gross_margin = ttm_gross_profit / ttm_total_revenue if ttm_total_revenue > 0 else 'N/A'
+            ttm_gross_profit = q_info.loc['Gross Profit'].dropna().head(4).sum() if 'Gross Profit' in q_info.index else np.nan
+            ttm_total_revenue = q_info.loc['Total Revenue'].dropna().head(4).sum() if 'Total Revenue' in q_info.index else np.nan
+            ttm_gross_margin = ttm_gross_profit / ttm_total_revenue if ttm_total_revenue > 0 else np.nan
 
             # Get Profit Margin
-            ttm_net_income = q_info.loc['Net Income'].dropna().head(4).sum() if 'Net Income' in q_info.index else 'N/A'
-            ttm_profit_margin = ttm_net_income / ttm_total_revenue if ttm_total_revenue > 0 else 'N/A'
+            ttm_net_income = q_info.loc['Net Income'].dropna().head(4).sum() if 'Net Income' in q_info.index else np.nan
+            ttm_profit_margin = ttm_net_income / ttm_total_revenue if ttm_total_revenue > 0 else np.nan
             
             # Try to get quarterly data for more recent metrics
             try:
@@ -126,10 +127,10 @@ def get_stock_metrics(tickers):
                 'Business Summary': info.get('longBusinessSummary', 'N/A') if info.get('longBusinessSummary') else 'N/A',
                 
                 # CURRENT METRICS
-                'Current Price': round(current_price, 2) if current_price != 'N/A' else info.get('currentPrice', 'N/A'),
+                'Current Price': round(current_price, 2) if not pd.isna(current_price) else info.get('currentPrice', np.nan),
                 'Current Market Cap': info.get('marketCap', 'N/A'), # Total market value of the company's outstanding shares
                 'P/E Ratio TTM': info.get('trailingPE', 'N/A'), # Current Stock Price / Earnings Per Share (last 12 months): how many years it would take to get your money back based on last year's profit
-                'P/E Ratio LFQ (Calculated)': current_price / (ttm_net_income / info.get('sharesOutstanding', 1)) if ttm_net_income > 0 else 'N/A', # Current Stock Price / Earnings Per Share (last 4 quarters): how many years it would take to get your money back based on last year's profit
+                'P/E Ratio LFQ (Calculated)': current_price / (ttm_net_income / info.get('sharesOutstanding', 1)) if not pd.isna(ttm_net_income) and ttm_net_income > 0 and not pd.isna(current_price) else np.nan, # Current Stock Price / Earnings Per Share (last 4 quarters): how many years it would take to get your money back based on last year's profit
                 'Forward P/E': info.get('forwardPE', 'N/A'),  # Current Stock Price / Projected Earnings Per Share (next 12 months): how many years it would take based on what you THINK it will make next year
                 'P/B Ratio': info.get('priceToBook', 'N/A'), # how much investors are paying relative to a company's book value (net worth on the balance sheet)
                 'P/S Ratio TTM': info.get('priceToSalesTrailing12Months', 'N/A'), # Price / Sales: how much investors are paying for each dollar of sales
@@ -140,9 +141,9 @@ def get_stock_metrics(tickers):
                 'Quarterly Revenue Growth (Calculated)': quarterly_revenue_growth,  # Quarterly revenue growth: how much a company's revenue has increased compared to the previous quarter
                 
                 # VALUATION METRICS
-                'P/FCF TTM (Calculated)': info.get('marketCap', 'N/A') / recent_fcf if recent_fcf > 0 else 'N/A', # Price / Free Cash Flow: how much investors are paying for each dollar of free cash flow
-                'P/FCF LFQ (Calculated)': info.get('marketCap', 'N/A') / ttm_fcf if ttm_fcf > 0 else 'N/A', # Price / Free Cash Flow: how much investors are paying for each dollar of free cash flow
-                'TEV/EBITDA LFQ (Calculated)': info.get('enterpriseValue', 'N/A') / ttm_ebitda if ttm_ebitda > 0 else 'N/A', # Total Enterprise Value / Earnings Before Interest, Taxes, Depreciation, and Amortization: how much investors are paying for each dollar of EBITDA
+                'P/FCF TTM (Calculated)': info.get('marketCap', np.nan) / recent_fcf if not pd.isna(recent_fcf) and recent_fcf > 0 and info.get('marketCap') not in [None] else np.nan, # Price / Free Cash Flow: how much investors are paying for each dollar of free cash flow
+                'P/FCF LFQ (Calculated)': info.get('marketCap', np.nan) / ttm_fcf if not pd.isna(ttm_fcf) and ttm_fcf > 0 and info.get('marketCap') not in [None] else np.nan, # Price / Free Cash Flow: how much investors are paying for each dollar of free cash flow
+                'TEV/EBITDA LFQ (Calculated)': info.get('enterpriseValue', np.nan) / ttm_ebitda if not pd.isna(ttm_ebitda) and ttm_ebitda > 0 and info.get('enterpriseValue') not in [None] else np.nan, # Total Enterprise Value / Earnings Before Interest, Taxes, Depreciation, and Amortization: how much investors are paying for each dollar of EBITDA
                 'Operating Margin MRQ': info.get('operatingMargins', 'N/A'), # Operating Income / Revenue: how much profit a company makes from its operations before interest and taxes
                 'Operating Margin LFQ (Calculated)': ttm_operating_margin,
                 'Gross Margin': info.get('grossMargins', 'N/A'), # Gross Profit / Revenue: how much profit a company makes after deducting the cost of goods sold
@@ -174,28 +175,28 @@ def get_stock_metrics(tickers):
                 'Beta': info.get('beta', 'N/A'), # measure of stock volatility compared to the market
                 
                 # MOMENTUM METRICS
-                'Momentum 1M (%)': round(momentum_1m, 2) if momentum_1m != 'N/A' else 'N/A', # Price change over last 1 month
-                'Momentum 3M (%)': round(momentum_3m, 2) if momentum_3m != 'N/A' else 'N/A', # Price change over last 3 months
-                'Momentum 6M (%)': round(momentum_6m, 2) if momentum_6m != 'N/A' else 'N/A', # Price change over last 6 months
-                'Momentum 1Y (%)': round(momentum_1y, 2) if momentum_1y != 'N/A' else 'N/A', # Price change over last 1 year
-                'Relative Strength (%)': round(relative_strength, 2) if relative_strength != 'N/A' else 'N/A', # Position within 52-week range (0-100%)
-                'Price vs 50MA (%)': round(price_vs_50ma * 100, 2) if price_vs_50ma != 'N/A' else 'N/A', # Current price relative to 50-day moving average
-                'Price vs 200MA (%)': round(price_vs_200ma * 100, 2) if price_vs_200ma != 'N/A' else 'N/A', # Current price relative to 200-day moving average
+                'Momentum 1M (%)': round(momentum_1m, 2) if not pd.isna(momentum_1m) else np.nan, # Price change over last 1 month
+                'Momentum 3M (%)': round(momentum_3m, 2) if not pd.isna(momentum_3m) else np.nan, # Price change over last 3 months
+                'Momentum 6M (%)': round(momentum_6m, 2) if not pd.isna(momentum_6m) else np.nan, # Price change over last 6 months
+                'Momentum 1Y (%)': round(momentum_1y, 2) if not pd.isna(momentum_1y) else np.nan, # Price change over last 1 year
+                'Relative Strength (%)': round(relative_strength, 2) if not pd.isna(relative_strength) else np.nan, # Position within 52-week range (0-100%)
+                'Price vs 50MA (%)': round(price_vs_50ma * 100, 2) if not pd.isna(price_vs_50ma) else np.nan, # Current price relative to 50-day moving average
+                'Price vs 200MA (%)': round(price_vs_200ma * 100, 2) if not pd.isna(price_vs_200ma) else np.nan, # Current price relative to 200-day moving average
                 
                 # VOLUME METRICS (Attention/Interest Indicators)
-                'Current Volume': int(current_volume) if current_volume != 'N/A' else 'N/A', # Latest trading volume
-                'Avg Volume 1M': int(avg_volume_1m) if avg_volume_1m != 'N/A' else 'N/A', # Average daily volume over 1 month
-                'Avg Volume 3M': int(avg_volume_3m) if avg_volume_3m != 'N/A' else 'N/A', # Average daily volume over 3 months
-                'Volume Change 1M (%)': round(volume_change_1m, 2) if volume_change_1m != 'N/A' else 'N/A', # Volume change vs 1-month average
-                'Volume Change 3M (%)': round(volume_change_3m, 2) if volume_change_3m != 'N/A' else 'N/A', # Volume change vs 3-month average
-                'Volume Change 6M (%)': round(volume_change_6m, 2) if volume_change_6m != 'N/A' else 'N/A', # Volume change vs 6-month average
-                'Volume Change 1Y (%)': round(volume_change_1y, 2) if volume_change_1y != 'N/A' else 'N/A', # Volume change vs 1-year average
-                'Volume Ratio (Avg)': round(volume_ratio_info, 2) if volume_ratio_info != 'N/A' else 'N/A', # Current volume vs average volume (from info)
-                'Volume Trend (10d/Avg)': round(volume_trend_info, 2) if volume_trend_info != 'N/A' else 'N/A', # 10-day volume trend vs average
-                'Volume Ratio 1M': round(volume_ratio_1m, 2) if volume_ratio_1m != 'N/A' else 'N/A', # Current volume / 1-month avg (>1 = above normal)
-                'Volume Ratio 3M': round(volume_ratio_3m, 2) if volume_ratio_3m != 'N/A' else 'N/A', # Current volume / 3-month avg (>1 = above normal)
-                'Volume Ratio 6M': round(volume_ratio_6m, 2) if volume_ratio_6m != 'N/A' else 'N/A', # Current volume / 6-month avg (>1 = above normal)
-                'Volume Ratio 1Y': round(volume_ratio_1y, 2) if volume_ratio_1y != 'N/A' else 'N/A', # Current volume / 1-year avg (>1 = above normal)
+                'Current Volume': int(current_volume) if not pd.isna(current_volume) else np.nan, # Latest trading volume
+                'Avg Volume 1M': int(avg_volume_1m) if not pd.isna(avg_volume_1m) else np.nan, # Average daily volume over 1 month
+                'Avg Volume 3M': int(avg_volume_3m) if not pd.isna(avg_volume_3m) else np.nan, # Average daily volume over 3 months
+                'Volume Change 1M (%)': round(volume_change_1m, 2) if not pd.isna(volume_change_1m) else np.nan, # Volume change vs 1-month average
+                'Volume Change 3M (%)': round(volume_change_3m, 2) if not pd.isna(volume_change_3m) else np.nan, # Volume change vs 3-month average
+                'Volume Change 6M (%)': round(volume_change_6m, 2) if not pd.isna(volume_change_6m) else np.nan, # Volume change vs 6-month average
+                'Volume Change 1Y (%)': round(volume_change_1y, 2) if not pd.isna(volume_change_1y) else np.nan, # Volume change vs 1-year average
+                'Volume Ratio (Avg)': round(volume_ratio_info, 2) if not pd.isna(volume_ratio_info) else np.nan, # Current volume vs average volume (from info)
+                'Volume Trend (10d/Avg)': round(volume_trend_info, 2) if not pd.isna(volume_trend_info) else np.nan, # 10-day volume trend vs average
+                'Volume Ratio 1M': round(volume_ratio_1m, 2) if not pd.isna(volume_ratio_1m) else np.nan, # Current volume / 1-month avg (>1 = above normal)
+                'Volume Ratio 3M': round(volume_ratio_3m, 2) if not pd.isna(volume_ratio_3m) else np.nan, # Current volume / 3-month avg (>1 = above normal)
+                'Volume Ratio 6M': round(volume_ratio_6m, 2) if not pd.isna(volume_ratio_6m) else np.nan, # Current volume / 6-month avg (>1 = above normal)
+                'Volume Ratio 1Y': round(volume_ratio_1y, 2) if not pd.isna(volume_ratio_1y) else np.nan, # Current volume / 1-year avg (>1 = above normal)
 
             }
             
@@ -311,9 +312,11 @@ if __name__ == "__main__":
     
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
+    # ticker_type = 'tta'
     # my_tickers = ['PHM']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
+    # ticker_type = 'tta'
     # my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
     #               'PLTR', 'META', 'CTRE', 'BLDP', 'AAPL', 'AVGO', 'AUDC', 'CRSP', 'MRVL', 'VRT', 'NVDA', 
     #               'PL', 'WMT', 'OXY', 'SGML', 'UNH', 'LQDT', 'MDT', 'ORCL', 'MSFT', 'TSLA', 'COST', 'MRK', 
@@ -331,17 +334,24 @@ if __name__ == "__main__":
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
 
     # Uncomment these lines to use S&P 500 tickers:
+    # ticker_type = 'sp500'
     # my_tickers = sp500_tickers()
     # my_tickers = my_tickers[:30]  # Limit to first 30 tickers for faster testing (remove for full analysis)
     
     # Uncomment these lines to use NASDAQ-100 tickers:
-    my_tickers = nasdaq_tickers()
+    # ticker_type = 'nasdaq'
+    # my_tickers = nasdaq_tickers()
     # my_tickers = my_tickers[:20]  # Limit to first 20 tickers for faster testing
     
     # Uncomment these lines to use Dow Jones tickers:
+    # ticker_type = 'dowjones'
     # my_tickers = dow_jones_tickers()
     # my_tickers = my_tickers[:1]  # Limit to first 20 tickers for faster testing
     
+    ticker_type = 'random500'
+    all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
+    my_tickers = all_tickers[0:500]
+    # random.sample(all_tickers, 500)
     
     #=============================================================================================================
     
@@ -372,7 +382,11 @@ if __name__ == "__main__":
     
     # Create timestamped filename for data export (prevents overwriting previous analyses)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f'tapas-to-apex-investing/stock_data_current_{timestamp}.csv'
+    datestamp = datetime.now().strftime('%Y%m%d')
+    if ticker_type is not None: 
+        filename = f'tapas-to-apex-investing/stock_data_current_{datestamp}_{ticker_type}.csv'    
+    else:
+        filename = f'tapas-to-apex-investing/stock_data_current_{timestamp}.csv'
     
     # Export complete dataset to CSV for further analysis or record keeping
     df.to_csv(filename)
