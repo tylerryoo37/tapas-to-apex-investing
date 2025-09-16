@@ -315,7 +315,7 @@ if __name__ == "__main__":
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
     # ticker_type = 'tta'
-    my_tickers = ['IBM', 'NICE', 'ADBE', 'STGW', 'PGY', 'KOPN', 'ENPH', 'SMCI', 'INTC', 'DLTR']  # Single ticker example
+    # my_tickers = ['IBM', 'NICE', 'ADBE', 'STGW', 'PGY', 'KOPN', 'ENPH', 'SMCI', 'INTC', 'DLTR']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # ticker_type = 'tta'
@@ -348,9 +348,14 @@ if __name__ == "__main__":
     # my_tickers = dow_jones_tickers()
     
     # Uncomment these lines to get a selection of 500-1000 tickers from a larger list
-    # all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
-    # ticker_type = 'random500'
-    # my_tickers = random.sample(all_tickers, 500)
+    all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
+    segment_size = 500
+    segment_number = 1
+    ticker_type = f'segment_{segment_number}'
+    
+    start_idx = segment_number * segment_size
+    end_idx = start_idx + segment_size
+    my_tickers = all_tickers[start_idx:end_idx]
     
     # my_tickers = all_tickers[1001:1501]
     # my_tickers = all_tickers[501:1001]
