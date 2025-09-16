@@ -80,11 +80,11 @@ def get_stock_metrics(tickers):
             volume_ratio_info = (volume_info / avg_volume_info) if not pd.isna(volume_info) and not pd.isna(avg_volume_info) and avg_volume_info != 0 else np.nan
             volume_trend_info = (avg_volume_10d_info / avg_volume_info) if not pd.isna(avg_volume_10d_info) and not pd.isna(avg_volume_info) and avg_volume_info != 0 else np.nan
             
-            # Get cash flow data 
-            free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] 
+            # Get cash flow data
+            free_cash_flow_row = stock.quarterly_cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else pd.Series()
             ttm_fcf = free_cash_flow_row.dropna().head(4).sum() if 'Free Cash Flow' in stock.quarterly_cashflow.index else np.nan
-            free_cash_flow_row_year = stock.cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else np.nan
-            recent_fcf = free_cash_flow_row_year.dropna().iloc[0]
+            free_cash_flow_row_year = stock.cashflow.loc['Free Cash Flow'] if 'Free Cash Flow' in stock.quarterly_cashflow.index else pd.Series()
+            recent_fcf = free_cash_flow_row_year.dropna().iloc[0] if not isinstance(free_cash_flow_row_year, float) and len(free_cash_flow_row_year.dropna()) > 0 else np.nan
             
             # Get Ebitda data
             ttm_ebitda = q_info.loc['EBITDA'].dropna().head(4).sum() if 'EBITDA' in q_info.index else np.nan
@@ -96,7 +96,7 @@ def get_stock_metrics(tickers):
             
             # Get Quarterly Revenue Growth
             revenue_quarters = q_info.loc['Total Revenue'].dropna().head(2) if 'Total Revenue' in q_info.index else np.nan
-            quarterly_revenue_growth = ((revenue_quarters.iloc[0] - revenue_quarters.iloc[1]) / revenue_quarters.iloc[1]) if len(revenue_quarters) == 2 and revenue_quarters.iloc[1] != 0 else np.nan
+            quarterly_revenue_growth = ((revenue_quarters.iloc[0] - revenue_quarters.iloc[1]) / revenue_quarters.iloc[1]) if not isinstance(revenue_quarters, float) and len(revenue_quarters) == 2 and revenue_quarters.iloc[1] != 0 else np.nan
             
             # Get Gross Margin
             ttm_gross_profit = q_info.loc['Gross Profit'].dropna().head(4).sum() if 'Gross Profit' in q_info.index else np.nan
@@ -152,7 +152,7 @@ def get_stock_metrics(tickers):
                 'Profit Margin LFQ (Calculated)': ttm_profit_margin, # Net Income / Revenue: how much profit a company makes after all expenses, taxes, and interest
                 
                 # FINANCIAL HEALTH
-                'Free Cash Flow LFQ (Calculated)': "; ".join([f"{date}: ${value/1e6:.0f}M" for date, value in free_cash_flow_row.dropna().head(4).items()]), # Free Cash Flow: cash generated after capital expenditures, available for distribution to investors
+                'Free Cash Flow LFQ (Calculated)': "; ".join([f"{date}: ${value/1e6:.0f}M" for date, value in free_cash_flow_row.dropna().head(4).items()]) if not isinstance(free_cash_flow_row, float) and len(free_cash_flow_row) > 0 else np.nan, # Free Cash Flow: cash generated after capital expenditures, available for distribution to investors
                 'Total Cash MRQ': format_scale(info.get('totalCash', 'N/A')), # Total Cash: cash and cash equivalents on the balance sheet
                 'Total Debt MRQ': format_scale(info.get('totalDebt', 'N/A')), # Total Debt: total interest-bearing debt on the balance sheet
                 
@@ -310,10 +310,12 @@ if __name__ == "__main__":
     # TICKER SELECTION OPTIONS
     #=============================================================================================================
     
+    ticker_type =None
+    
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
     # ticker_type = 'tta'
-    # my_tickers = ['PHM']  # Single ticker example
+    # my_tickers = ['CCEP']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # ticker_type = 'tta'
@@ -336,21 +338,21 @@ if __name__ == "__main__":
     # Uncomment these lines to use S&P 500 tickers:
     # ticker_type = 'sp500'
     # my_tickers = sp500_tickers()
-    # my_tickers = my_tickers[:30]  # Limit to first 30 tickers for faster testing (remove for full analysis)
     
     # Uncomment these lines to use NASDAQ-100 tickers:
-    # ticker_type = 'nasdaq'
-    # my_tickers = nasdaq_tickers()
-    # my_tickers = my_tickers[:20]  # Limit to first 20 tickers for faster testing
+    ticker_type = 'nasdaq'
+    my_tickers = nasdaq_tickers()
     
     # Uncomment these lines to use Dow Jones tickers:
     # ticker_type = 'dowjones'
     # my_tickers = dow_jones_tickers()
-    # my_tickers = my_tickers[:1]  # Limit to first 20 tickers for faster testing
     
-    ticker_type = 'random500'
-    all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
-    my_tickers = all_tickers[0:500]
+    # ticker_type = 'random500_3'
+    # all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
+    
+    # my_tickers = all_tickers[1001:1501]
+    # my_tickers = all_tickers[501:1001]
+    # my_tickers = all_tickers[0:500]
     # random.sample(all_tickers, 500)
     
     #=============================================================================================================
