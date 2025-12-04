@@ -2,10 +2,9 @@ import yfinance as yf
 import pandas as pd
 from datetime import datetime
 import time
-import numpy as np 
+import numpy as np
 import requests
 from io import StringIO
-import random
 
 def get_stock_metrics(tickers):
     """
@@ -106,15 +105,7 @@ def get_stock_metrics(tickers):
             # Get Profit Margin
             ttm_net_income = q_info.loc['Net Income'].dropna().head(4).sum() if 'Net Income' in q_info.index else np.nan
             ttm_profit_margin = ttm_net_income / ttm_total_revenue if ttm_total_revenue > 0 else np.nan
-            
-            # Try to get quarterly data for more recent metrics
-            try:
-                quarterly_financials = stock.quarterly_financials
-                quarterly_balance_sheet = stock.quarterly_balance_sheet
-            except:
-                quarterly_financials = pd.DataFrame()
-                quarterly_balance_sheet = pd.DataFrame()
-            
+
             # Extract key metrics with fallbacks
             metrics = {
                 'Company Name': info.get('longName', 'N/A'),
@@ -314,11 +305,33 @@ if __name__ == "__main__":
     
     # Option 1: Manual ticker selection for specific stocks of interest
     # Uncomment and modify this list to analyze specific tickers
-    # ticker_type = 'tta'
-    # my_tickers = ['IBM', 'NICE', 'ADBE', 'STGW', 'PGY', 'KOPN', 'ENPH', 'SMCI', 'INTC', 'DLTR']  # Single ticker example
+    # ticker_type = 'tyler'
+    ticker_type = 'nuclear'
+    my_tickers = nuclear_tickers = ['NEE', 'EXC', 'DUK', 'SO', 'CEG', 'GE', 'BWX', 'FLR', 'CCJ', 'UEC', 'UUUU', 'URG', 'DNN', 'LEU', 'UEX', 'URA', 'NUCL', 'NLR', 'NNE', 'SMR']
+    # ticker_type = 'energy'
+    # my_tickers = ['UUUU', 'LEU', 'CCJ', 'BWXT', 'UEC', 'NNE', 'MIR', 'NXE', 'OKLO', 'LTBR', 'ASSPI', 'UROY', 'EU', 'EOSE', 'SEI', 'TSLA', 'AMPX', 'MVST', 'BLDP', 'ABAT',
+    #               'ALB', 'LAC', 'LAR', 'SGML', 'SLI', 'AMRK', 'FCX', 'FM', 'WPM', 'IVN', 'CRS', 'IE', 'IDR', 'MP', 'CRML', 'NB', 'USAR', 'UAMY', 'METC']
+    # my_tickers = ['NICE', 'TNXP', 'DDOG', 'EOSE', 'PL', 'ASTS', 'VVX', 'RKLB', 'CRWV', 'NBIS', 'MSFT', 'ANET', 'BE', 'VST', 'NEE', 'TSLA', 'PATH', 'BBAI', 'TLS', 'AMD',
+    #               'CRWD', 'SOFI', 'BLDP', 'PYPL', 'META', 'AISP', 'AEHR', 'IREN', 'VRT', 'SMCI', 'APLD', 'CRSP', 'INVZ', 'NBIS', 'RKLB', 'TMC']
+    # my_tickers = ['COIN', 'HOOD', 'FISV']
+    # my_tickers = ['PLTR', 'NVDA', 'MSFT', 'META', 'UNH', 'WMT', 'ABT', 'ASML', 'GOOGL', 'TSM']
+    # my_tickers = ['PL', 'SPIR', 'ASTS', 'ACHR', 'BA', 'RKLB', 'BBAI', 'BE', 'AISP']
+    # my_tickers = ['TNXP', 'EOSE', 'CRSP', 'NBIS', 'RXRX', 'ABT', 'NTLA', 'NICE', 'CPRT', 'NVO']
+    # my_tickers = ['CCS', 'BA', 'CEVA', 'IBM', 'NICE', 'ADBE', 
+    #               'STGW', 'PGY', 'KOPN', 'ENPH', 'SMCI', 'INTC', 
+    #               'DLTR', 'LRCX', 'SIRI', 'MRK', 'CCJ', 'ASTS', 
+    #               'PL', 'EVER', 'LQDT', 'SGML', 'SEZL', 'CTRE', 
+    #               'NVAX', 'TLS', 'COHR', 'SLDP', 'MDT', 'ASTS',
+    #               'PL', 'EVER', 'UI', 'LQDT', 'SGML', 'SEZL', 
+    #               'ANET', 'SMCI', 'TLS', 'SPIR', 'BLDP', 'VRT', 
+    #               'BE', 'BLNK', 'IONQ', 'BBAI', 'MRVL', 'AISP',
+    #               'QUBT', 'PGY', 'INOD', 'AEHR', 'QBTS', 'SMR',
+    #               'CHGG', 'RGTI', 'NTLA']  # Single ticker example
     
     # Current manual selection - mix of growth, value, and speculative stocks
     # ticker_type = 'tta'
+    # my_tickers = ['LEN', 'RXRX', 'ALB', 'ABBV', 'TYL', 'SOFI']
+    # my_tickers = ['NBIS', 'GOOGL', 'MSFT', 'AMZN', 'META', 'UNH', 'ABT', 'PLTR', 'CRSP', 'TSLA', 'VST']
     # my_tickers = ['SSYS', 'BE', 'SLDP', 'NVAX', 'NBIS', 'VVX', 'ARDX', 'CELH', 'ANET', 'AEHR', 'APP', 
     #               'PLTR', 'META', 'CTRE', 'BLDP', 'AAPL', 'AVGO', 'AUDC', 'CRSP', 'MRVL', 'VRT', 'NVDA', 
     #               'PL', 'WMT', 'OXY', 'SGML', 'UNH', 'LQDT', 'MDT', 'ORCL', 'MSFT', 'TSLA', 'COST', 'MRK', 
@@ -348,15 +361,15 @@ if __name__ == "__main__":
     # my_tickers = dow_jones_tickers()
     
     # Uncomment these lines to get a selection of 500-1000 tickers from a larger list
-    all_tickers = pd.read_csv('tapas-to-apex-investing/all_tickers.txt', header=None)[0].to_list()
-    segment_size = 500
-    segment_number = 1
-    ticker_type = f'segment_{segment_number}'
-    
-    start_idx = segment_number * segment_size
-    end_idx = start_idx + segment_size
-    my_tickers = all_tickers[start_idx:end_idx]
-    
+    # all_tickers = pd.read_csv('../all_tickers.txt', header=None)[0].to_list()
+    # segment_size = 500
+    # segment_number = 11
+    # ticker_type = f'segment_{segment_number}'
+
+    # start_idx = segment_number * segment_size
+    # end_idx = start_idx + segment_size
+    # my_tickers = all_tickers[start_idx:end_idx]
+
     # my_tickers = all_tickers[1001:1501]
     # my_tickers = all_tickers[501:1001]
     # my_tickers = all_tickers[0:500]
@@ -390,12 +403,13 @@ if __name__ == "__main__":
     #=============================================================================================================
     
     # Create timestamped filename for data export (prevents overwriting previous analyses)
+    # Outputs will be saved in the current directory (tta_automation_v1)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     datestamp = datetime.now().strftime('%Y%m%d')
-    if ticker_type is not None: 
-        filename = f'tapas-to-apex-investing/stock_data_current_{datestamp}_{ticker_type}.csv'    
+    if ticker_type is not None:
+        filename = f'stock_data_current_{datestamp}_{ticker_type}.csv'
     else:
-        filename = f'tapas-to-apex-investing/stock_data_current_{timestamp}.csv'
+        filename = f'stock_data_current_{timestamp}.csv'
     
     # Export complete dataset to CSV for further analysis or record keeping
     df.to_csv(filename)
