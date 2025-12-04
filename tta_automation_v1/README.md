@@ -16,6 +16,7 @@ tapas-to-apex-investing/
 ├── 01_data_extraction_fundamentals.py    # Extract comprehensive stock metrics
 ├── 02_ticker_selection.ipynb             # Filter stocks by investment criteria  
 ├── 03_fundamentals_analysis.ipynb        # Analyze individual stock fundamentals
+├── 03_fundamentals_analysis_multiple.ipynb # Analyze multiple stocks fundamentals
 ├── 04_quarterly_analysis_wip.ipynb       # Deep-dive quarterly analysis (WIP)
 ├── 05_portfolio_evaluation.py            # Comprehensive portfolio performance analysis
 ├── data/
@@ -309,7 +310,18 @@ This toolkit supports multiple investment approaches:
 - Always verify critical data points independently
 - This is only a beta version, your contribution will be important to make this tool better!
 
-## 🔮 Future Enhancements
+## � Current Limitations
+
+### Narrow Stock Universe
+Limiting analysis to S&P 500 or Nasdaq stocks restricts exposure to smaller or sector-specific growth opportunities.
+
+### Fragmented Codebase
+The current workflow relies on running individual scripts and notebook cells manually, rather than using a modular and automated pipeline.
+
+### Manual Prompt Engineering
+Each stock analysis prompt is executed manually through an LLM interface, making the process inefficient and difficult to scale. Ideally, these should be handled programmatically through an API.
+
+## �🔮 Future Enhancements
 
 - [ ] Complete quarterly analysis notebook
 - [ ] Add macro/sector indicators to enhance analysis
